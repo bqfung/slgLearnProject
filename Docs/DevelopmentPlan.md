@@ -143,7 +143,7 @@
 - 小队全灭时失败。
 - Boss 被击败时胜利。
 
-状态：待开始
+状态：进行中
 
 ### 第 5 阶段：UI 与流程闭环
 
@@ -164,7 +164,7 @@
 - UI 状态随游戏流程切换。
 - 失败或胜利后可以重新开始。
 
-状态：待开始
+状态：进行中
 
 ### 第 6 阶段：数据驱动与工程整理
 
@@ -266,7 +266,7 @@ Docs/
 
 ## 当前下一步
 
-下一步在 Unity 中测试第 3 阶段：点击 `SLG Learn > Build Stage 03 Combat Scene` 生成自动战斗测试场景，并按照 `Docs/Stage03_TestChecklist.md` 验收。
+下一步在 Unity 中测试第 5 阶段：点击 `SLG Learn > Build Stage 05 UI Flow Scene` 生成 UI 流程测试场景，并按照 `Docs/Stage05_TestChecklist.md` 验收。
 
 ## 开发记录
 
@@ -326,3 +326,28 @@ Docs/
 - 使用方式：打开 Unity 后点击 `SLG Learn > Build Stage 03 Combat Scene`。
 - 遇到的问题：当前攻击先采用即时伤害，没有子弹飞行和受击表现，便于优先验证战斗数值闭环。
 - 后续待优化内容：加入子弹对象池、伤害反馈、敌人反击和 Boss 战。
+
+### 2026-05-12：第 4 阶段敌人波次与 Boss 基础版
+
+- 完成功能：实现敌人向小队移动、近战攻击减员、Boss 血量和攻击、胜利/失败基础判断，并新增 Boss 测试场景。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Enemy/EnemyMeleeAttacker.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemyHealth.cs`
+  - `Assets/_Project/Scripts/Core/GameOutcomeController.cs`
+  - `Assets/_Project/Scripts/Editor/StageFourSceneBuilder.cs`
+  - `Docs/Stage04_TestChecklist.md`
+- 使用方式：打开 Unity 后点击 `SLG Learn > Build Stage 04 Boss Scene`。
+- 遇到的问题：当前波次仍是场景预摆放，不是运行时配置生成；Boss 胜利反馈暂时使用世界空间文字。
+- 后续待优化内容：加入 Boss 血条、UI 流程、运行时敌人生成器和更完整的暂停/重开流程。
+
+### 2026-05-12：第 5 阶段 UI 与流程闭环基础版
+
+- 完成功能：实现战斗 HUD、Boss 血量显示、胜负结果面板和重新开始按钮，并新增 UI 流程测试场景。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/UI/BattleHudController.cs`
+  - `Assets/_Project/Scripts/Core/GameOutcomeController.cs`
+  - `Assets/_Project/Scripts/Editor/StageFiveSceneBuilder.cs`
+  - `Docs/Stage05_TestChecklist.md`
+- 使用方式：打开 Unity 后点击 `SLG Learn > Build Stage 05 UI Flow Scene`。
+- 遇到的问题：当前 UI 以流程验证为主，视觉样式比较简单；开始界面暂未实现。
+- 后续待优化内容：增加开始界面、Boss 血条、关卡进度条、结算奖励和正式 UI 样式。

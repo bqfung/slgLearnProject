@@ -10,10 +10,20 @@ namespace SLGLearn.Enemy
         private bool isDead;
 
         public bool IsDead => isDead;
+        public float CurrentHealth => currentHealth;
+        public float MaxHealth => maxHealth;
 
         private void Awake()
         {
             currentHealth = maxHealth;
+        }
+
+        public void Configure(float health)
+        {
+            maxHealth = Mathf.Max(1f, health);
+            currentHealth = maxHealth;
+            isDead = false;
+            gameObject.SetActive(true);
         }
 
         public void TakeDamage(float damage)

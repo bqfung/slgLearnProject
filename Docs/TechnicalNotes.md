@@ -200,6 +200,13 @@
 - ScriptableObject 在关卡配置中的使用。
 - 如何避免关卡逻辑写死在代码里。
 
+### 当前实现记录
+
+- 第 4 阶段先通过 `StageFourSceneBuilder` 在场景中预摆放多组敌人，验证波次节奏。
+- 普通敌人挂载 `EnemyHealth` 和 `EnemyMeleeAttacker`。
+- `EnemyMeleeAttacker` 会向小队移动，进入攻击距离后按频率调用 `SquadManager.RemoveMembers`。
+- 当前波次还不是运行时生成，后续会迁移到 `EnemySpawner` 和关卡配置。
+
 ## 7. Boss 战
 
 ### 目标
@@ -225,6 +232,19 @@
 - UI 如何监听战斗事件。
 - 胜负判断应由哪个模块负责。
 
+### 当前实现记录
+
+- Boss 当前复用 `EnemyHealth` 和 `EnemyMeleeAttacker`，通过更高血量、更大体型、更高攻击伤害形成差异。
+- `GameOutcomeController` 监听小队人数和 Boss 状态。
+- 小队人数为 0 时失败，Boss 死亡时胜利。
+- 胜负结果暂时通过世界空间 `TextMesh` 和日志输出反馈。
+
+### 当前设计取舍
+
+- Boss 先复用普通敌人组件，减少早期系统复杂度。
+- 胜负判断独立放在 `GameOutcomeController`，避免让 UI、Boss 或小队管理器承担过多职责。
+- 后续 UI 阶段会把胜负结果从世界空间文字迁移到正式结算面板。
+
 ## 8. UI 流程管理
 
 ### 目标
@@ -249,6 +269,20 @@
 - MVC、MVP、MVVM 在 Unity UI 中的应用思路。
 - 事件系统如何降低耦合。
 - UI 和业务逻辑如何分层。
+
+### 当前实现记录
+
+- `BattleHudController` 负责战斗 HUD 和胜负面板。
+- HUD 通过轮询显示小队人数和 Boss 血量，适合当前简单 Demo。
+- `GameOutcomeController` 在胜负触发时派发 `Finished` 事件。
+- `BattleHudController` 监听胜负事件，打开结果面板并显示胜利或失败。
+- `Restart` 按钮通过 `SceneManager.LoadScene` 重新加载当前场景。
+
+### 当前设计取舍
+
+- 小队人数和 Boss 血量使用轮询刷新，代码简单；后续如 UI 较复杂，可改为事件驱动。
+- 胜负判断仍放在流程控制组件中，UI 只负责展示结果。
+- 第 5 阶段暂时跳过开始界面，优先完成战斗到结算的闭环。
 
 ## 9. 数据驱动设计
 
