@@ -8,6 +8,9 @@ namespace SLGLearn.Combat
         [SerializeField, Min(0.1f)] private float attackRange = 8f;
         [SerializeField, Min(0.1f)] private float attacksPerSecond = 1f;
         [SerializeField, Min(0.1f)] private float damage = 1f;
+        [SerializeField, Min(0.1f)] private float bulletSpeed = 18f;
+        [SerializeField, Min(0.1f)] private float bulletLifetime = 1.5f;
+        [SerializeField] private Vector3 muzzleOffset = new(0f, 0.6f, 0.35f);
         [SerializeField] private LayerMask targetLayers = ~0;
 
         private readonly Collider[] targetBuffer = new Collider[24];
@@ -27,8 +30,23 @@ namespace SLGLearn.Combat
                 return;
             }
 
-            target.TakeDamage(damage);
+            FireAt(target);
             cooldown = 1f / attacksPerSecond;
+        }
+
+        private void FireAt(EnemyHealth target)
+        {
+            var toTarget = target.transform.position - transform.position;
+            toTarget.y = 0f;
+
+            if (toTarget.sqrMagnitude > 0f)
+            {
+                transform.rotation = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
+            }
+
+            var bulletPool = BulletPool.GetOrCreate();
+            var bullet = bulletPool.Spawn(transform.TransformPoint(muzzleOffset));
+            bullet.Launch(bulletPool, bullet.transform.position, target, damage, bulletSpeed, bulletLifetime);
         }
 
         private EnemyHealth FindTarget()

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace SLGLearn.Enemy
@@ -9,6 +10,7 @@ namespace SLGLearn.Enemy
         private float currentHealth;
         private bool isDead;
 
+        public event Action<EnemyHealth> Died;
         public bool IsDead => isDead;
         public float CurrentHealth => currentHealth;
         public float MaxHealth => maxHealth;
@@ -43,6 +45,7 @@ namespace SLGLearn.Enemy
         private void Die()
         {
             isDead = true;
+            Died?.Invoke(this);
             gameObject.SetActive(false);
         }
     }

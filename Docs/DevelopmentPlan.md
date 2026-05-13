@@ -184,7 +184,7 @@
 - 新增敌人或关卡不需要大改代码。
 - 项目结构适合面试讲解。
 
-状态：待开始
+状态：进行中
 
 ### 第 7 阶段：作品集亮点系统
 
@@ -266,7 +266,7 @@ Docs/
 
 ## 当前下一步
 
-下一步在 Unity 中测试第 5 阶段：点击 `SLG Learn > Build Stage 05 UI Flow Scene` 生成 UI 流程测试场景，并按照 `Docs/Stage05_TestChecklist.md` 验收。
+下一步在 Unity 中测试第 6 阶段：点击 `SLG Learn > Build Stage 06 Data Driven Scene` 生成数据驱动测试场景，并按照 `Docs/Stage06_TestChecklist.md` 验收。
 
 ## 开发记录
 
@@ -351,3 +351,101 @@ Docs/
 - 使用方式：打开 Unity 后点击 `SLG Learn > Build Stage 05 UI Flow Scene`。
 - 遇到的问题：当前 UI 以流程验证为主，视觉样式比较简单；开始界面暂未实现。
 - 后续待优化内容：增加开始界面、Boss 血条、关卡进度条、结算奖励和正式 UI 样式。
+
+### 2026-05-13：第 6 阶段数据驱动基础版
+
+- 完成功能：新增 `LevelConfig` 配置资产结构和运行时 `LevelBuilder`，把倍率门、敌人波次、Boss 和赛道参数从场景生成器中抽离。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Data/GateConfig.cs`
+  - `Assets/_Project/Scripts/Data/EnemyWaveConfig.cs`
+  - `Assets/_Project/Scripts/Data/BossConfig.cs`
+  - `Assets/_Project/Scripts/Data/LevelConfig.cs`
+  - `Assets/_Project/Scripts/Level/LevelBuilder.cs`
+  - `Assets/_Project/Scripts/Editor/StageSixSceneBuilder.cs`
+  - `Docs/Stage06_TestChecklist.md`
+- 使用方式：打开 Unity 后点击 `SLG Learn > Build Stage 06 Data Driven Scene`，首次执行会自动创建 `Assets/_Project/ScriptableObjects/Stage06_LevelConfig.asset`，场景在 Play 时由 `LevelBuilder` 运行时生成。
+- 遇到的问题：`LevelBuilder` 暂时同时负责赛道、门、敌人、Boss 和 UI 创建，职责偏多。
+- 后续待优化内容：继续拆分运行时生成逻辑，并减少各阶段场景生成器的重复代码。
+
+### 2026-05-13：第 6 阶段生成逻辑拆分
+
+- 完成功能：将 `LevelBuilder` 中的倍率门生成、敌人波次生成和 Boss 生成拆到独立模块。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Level/GateBuilder.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemySpawner.cs`
+  - `Assets/_Project/Scripts/Level/RuntimePrimitiveFactory.cs`
+  - `Assets/_Project/Scripts/Level/LevelBuilder.cs`
+- 设计结果：`LevelBuilder` 主要负责编排关卡加载流程，`GateBuilder` 负责倍率门，`EnemySpawner` 负责普通敌人和 Boss，`RuntimePrimitiveFactory` 暂时负责运行时临时材质创建。
+- 遇到的问题：UI、赛道、小队和摄像机生成仍在 `LevelBuilder` 中，后续还需要继续拆分。
+- 后续待优化内容：继续新增 `RoadBuilder`、`PlayerSquadFactory`，让 `LevelBuilder` 更接近纯流程编排器。
+
+### 2026-05-13：第 6 阶段 UI 生成拆分
+
+- 完成功能：将战斗 HUD、结果面板、重开按钮和 EventSystem 的创建逻辑从 `LevelBuilder` 拆到 `RuntimeUiBuilder`。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/UI/RuntimeUiBuilder.cs`
+  - `Assets/_Project/Scripts/Level/LevelBuilder.cs`
+- 设计结果：`LevelBuilder` 不再关心 UI 具体创建细节，只在 Boss 和胜负控制器创建后调用 `RuntimeUiBuilder.BuildBattleUi`。
+- 遇到的问题：UI 仍是运行时临时创建，暂未使用正式 Prefab 或 UI 资源。
+- 后续待优化内容：后续可以把 `RuntimeUiBuilder` 替换为加载 UI Prefab 的实现，保留 `BattleHudController` 的数据绑定方式。
+
+### 2026-05-13：第 6 阶段环境与玩家生成拆分
+
+- 完成功能：将环境、玩家小队和运行时摄像机创建从 `LevelBuilder` 拆出。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Level/EnvironmentBuilder.cs`
+  - `Assets/_Project/Scripts/Player/PlayerSquadFactory.cs`
+  - `Assets/_Project/Scripts/Core/RuntimeCameraFactory.cs`
+  - `Assets/_Project/Scripts/Level/LevelBuilder.cs`
+- 设计结果：`LevelBuilder` 当前主要负责按顺序调用环境、玩家、摄像机、倍率门、敌人、Boss、胜负控制和 UI 生成模块。
+- 遇到的问题：这些 Builder/Factory 仍在直接创建临时 GameObject，后续需要逐步替换为 Prefab 或资源加载。
+- 后续待优化内容：引入 Prefab 配置、对象池和更正式的运行时资源管理。
+
+### 2026-05-13：子弹对象池与攻击表现
+
+- 完成功能：将士兵攻击从即时扣血升级为发射子弹，子弹通过对象池复用，命中敌人后造成伤害并回收。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Combat/Bullet.cs`
+  - `Assets/_Project/Scripts/Combat/BulletPool.cs`
+  - `Assets/_Project/Scripts/Combat/SoldierWeapon.cs`
+- 设计结果：`SoldierWeapon` 只负责索敌和发射，`Bullet` 负责飞行和命中，`BulletPool` 负责创建、取出和回收子弹。
+- 遇到的问题：当前子弹仍使用运行时临时球体，缺少正式 Prefab、拖尾、命中特效和音效。
+- 后续待优化内容：将子弹 Prefab、命中特效和伤害数字都纳入对象池，并增加池容量监控。
+
+### 2026-05-13：命中反馈对象池
+
+- 完成功能：新增伤害数字和命中特效对象池，子弹命中时显示伤害数字和短暂命中闪光。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Combat/DamageNumber.cs`
+  - `Assets/_Project/Scripts/Combat/DamageNumberPool.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffect.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffectPool.cs`
+  - `Assets/_Project/Scripts/Combat/Bullet.cs`
+- 设计结果：子弹命中后只负责触发反馈，伤害数字和命中特效各自管理生命周期与回收。
+- 遇到的问题：当前反馈表现仍是临时 TextMesh 和球体，没有美术资源。
+- 后续待优化内容：替换正式伤害数字 Prefab、粒子特效 Prefab，并把对象池抽象为通用池。
+
+### 2026-05-13：普通敌人对象池
+
+- 完成功能：新增普通敌人对象池，敌人死亡后通过死亡事件回收到池中。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Enemy/EnemyHealth.cs`
+  - `Assets/_Project/Scripts/Enemy/PooledEnemy.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemyPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemySpawner.cs`
+- 设计结果：`EnemyHealth` 负责派发死亡事件，`PooledEnemy` 监听死亡事件并通知 `EnemyPool` 回收，`EnemySpawner` 通过 `EnemyPool` 创建普通敌人。
+- 遇到的问题：Boss 暂未池化，因为 Boss 与胜负判断强绑定，生命周期和普通敌人不同。
+- 后续待优化内容：抽象通用组件池，统一子弹、反馈、敌人对象池的重复逻辑。
+
+### 2026-05-13：通用组件对象池抽象
+
+- 完成功能：新增 `ComponentPool<T>`，统一对象池的预热、取出、回收和容量警告逻辑。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Core/ComponentPool.cs`
+  - `Assets/_Project/Scripts/Combat/BulletPool.cs`
+  - `Assets/_Project/Scripts/Combat/DamageNumberPool.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffectPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemyPool.cs`
+- 设计结果：通用池只处理生命周期共性，具体池只负责创建对象和暴露业务化 `Spawn` 方法。
+- 遇到的问题：当前仍是每种池一个全局 `Shared`，适合 Demo，但大型项目中需要更统一的池管理器。
+- 后续待优化内容：增加池状态调试信息，例如总创建数、可用数量、峰值数量。

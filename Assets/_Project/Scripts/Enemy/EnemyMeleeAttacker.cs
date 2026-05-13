@@ -46,6 +46,7 @@ namespace SLGLearn.Enemy
             attackRange = Mathf.Max(0.1f, range);
             attacksPerSecond = Mathf.Max(0.1f, rate);
             damageMembers = Mathf.Max(1, damage);
+            cooldown = 0f;
         }
 
         private void MoveToward(Vector3 toTarget)

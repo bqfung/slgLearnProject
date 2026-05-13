@@ -175,6 +175,41 @@
 - 对象池如何减少 GC。
 - 对象池可能带来的状态残留问题。
 
+### 当前实现记录
+
+- `BulletPool` 是运行时子弹对象池，首次攻击时会自动创建。
+- `BulletPool` 会预热一批子弹，并在发射时从队列中取出。
+- `Bullet` 负责追踪目标、移动、命中、超时和回收。
+- `SoldierWeapon` 不再直接对敌人扣血，而是在攻击冷却结束后向目标发射子弹。
+- 子弹命中敌人后调用 `EnemyHealth.TakeDamage`，然后回收到池中。
+- `DamageNumberPool` 负责复用伤害数字。
+- `HitEffectPool` 负责复用命中闪光效果。
+- 子弹命中后会同时触发伤害数字和命中特效，二者各自到期后回收。
+- `EnemyPool` 负责复用普通敌人。
+- `PooledEnemy` 监听 `EnemyHealth.Died` 事件，并在普通敌人死亡时通知对象池回收。
+- `EnemySpawner` 现在通过 `EnemyPool` 生成普通敌人，Boss 仍独立创建。
+- `ComponentPool<T>` 抽出了对象池的通用逻辑：预热、取出、回收、超过配置容量时警告。
+- `BulletPool`、`DamageNumberPool`、`HitEffectPool`、`EnemyPool` 都继承 `ComponentPool<T>`。
+
+### 当前设计取舍
+
+- 对象池当前覆盖子弹、伤害数字和命中特效，仍保持在战斗反馈范围内。
+- 普通敌人也已经接入对象池，死亡后不再只做隐藏，而是回到 `EnemyPool`。
+- 子弹和命中特效使用运行时球体，伤害数字使用 TextMesh，后续都可以替换为正式 Prefab。
+- `BulletPool` 当前是简化版全局池，适合 Demo；大型项目中可以按场景、玩法模块或资源类型管理多个池。
+- Boss 暂不池化，因为它通常是关卡关键对象，生命周期与普通敌人波次不同。
+- 通用池不关心具体对象怎么创建和怎么播放，只管理池生命周期，避免抽象层过度了解业务。
+
+### 面试可讲点补充
+
+- 对象池不是为了让单个对象更快，而是为了避免频繁 `Instantiate` / `Destroy` 造成 CPU 峰值和 GC 压力。
+- 回收对象时必须重置运行时状态，例如目标引用、生命周期、位置、激活状态。
+- 对象池容量需要结合峰值并发量设置，太小会频繁扩容，太大则浪费内存。
+- 反馈类对象特别适合池化，因为它们数量多、生命周期短、创建销毁频繁。
+- 敌人池化时要特别注意状态重置，例如血量、目标、移动速度、攻击冷却、父节点和激活状态。
+- 当前 `EnemyMeleeAttacker.Configure` 会重置攻击冷却，避免池化敌人复用后继承旧状态。
+- 抽通用池时要避免“为了复用而复用”：如果通用基类塞入太多业务参数，反而会让每个对象池更难维护。
+
 ## 6. 敌人波次系统
 
 ### 目标
@@ -308,6 +343,47 @@
 - ScriptableObject 的优点和注意事项。
 - 配置数据和运行时数据为什么要分离。
 - 数据驱动如何提升可扩展性。
+
+### 当前实现记录
+
+- `LevelConfig` 是关卡配置入口，包含赛道长度、宽度、倍率门、敌人波次和 Boss 配置。
+- `GateConfig` 描述一组左右门的位置、运算类型和数值。
+- `EnemyWaveConfig` 描述敌人波次的位置、数量、血量、速度、攻击范围、攻击频率和减员数量。
+- `BossConfig` 描述 Boss 位置、血量、速度、攻击范围、攻击频率和减员数量。
+- `StageSixSceneBuilder` 首次执行时会自动创建默认 `Stage06_LevelConfig.asset`，并创建挂载 `LevelBuilder` 的测试场景。
+- `LevelBuilder` 在运行时读取 `LevelConfig`，生成赛道、小队、摄像机、倍率门、敌人波次、Boss 和 UI。
+
+### 当前设计取舍
+
+- 现在采用 ScriptableObject 作为静态关卡配置，适合 Unity 编辑器内调参与版本管理。
+- 配置类只保存数据，不直接创建 GameObject，避免数据层和表现层耦合。
+- 当前生成逻辑已经从 Editor 工具迁移到运行时 `LevelBuilder`，Editor 菜单只负责创建配置资产和测试场景。
+- `LevelBuilder` 当前职责较多，后续可以按对象类型继续拆分，避免变成新的上帝类。
+
+### 当前拆分记录
+
+- `GateBuilder` 负责根据 `GateConfig` 创建左右倍率门、门面板和文字。
+- `EnemySpawner` 负责根据 `EnemyWaveConfig` 创建普通敌人，并根据 `BossConfig` 创建 Boss。
+- `RuntimePrimitiveFactory` 暂时集中处理运行时临时材质创建，避免颜色和 Shader 查找逻辑散落在多个类里。
+- `RuntimeUiBuilder` 负责创建战斗 HUD、结果面板、重开按钮和 EventSystem。
+- `EnvironmentBuilder` 负责运行时创建临时灯光、赛道和边界。
+- `PlayerSquadFactory` 负责创建玩家小队对象并挂载小队相关组件。
+- `RuntimeCameraFactory` 负责创建主摄像机并挂载跟随组件。
+- `LevelBuilder` 现在主要负责关卡构建顺序：环境、小队、摄像机、倍率门、敌人、Boss、胜负控制和 UI 装配。
+
+### 面试可讲点补充
+
+- 一个类开始变大时，不一定马上做复杂架构；可以先按变化原因拆分，例如门、敌人、UI 的变化原因不同。
+- `LevelBuilder` 作为流程编排器，不应长期持有所有对象创建细节，否则会逐渐变成上帝类。
+- 拆分后每个类更容易单独替换，例如后续可以把 `EnemySpawner` 改成对象池版本，而不影响倍率门逻辑。
+- UI 创建拆到 `RuntimeUiBuilder` 后，后续可以从“代码创建 UI”平滑替换为“加载 UI Prefab”，不用改关卡生成流程。
+- 环境、小队和摄像机拆出后，`LevelBuilder` 更接近流程编排器；后续替换正式 Prefab 时影响面更小。
+
+### 面试可讲点补充
+
+- ScriptableObject 适合保存静态配置，但不适合直接保存玩家运行时存档。
+- 配置数据和运行时状态要分离，例如敌人最大血量属于配置，当前血量属于运行时状态。
+- 数据驱动的价值是减少硬编码，让策划或开发者可以通过配置快速调整关卡。
 
 ## 10. 性能优化
 
