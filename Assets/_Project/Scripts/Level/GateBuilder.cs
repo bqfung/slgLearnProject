@@ -39,8 +39,8 @@ namespace SLGLearn.Level
             panel.transform.localScale = new Vector3(2.2f, 2.2f, 0.15f);
             panel.GetComponent<Renderer>().sharedMaterial = RuntimePrimitiveFactory.CreateMaterial(
                 operation == GateOperation.Subtract
-                    ? new Color(0.85f, 0.2f, 0.2f)
-                    : new Color(0.1f, 0.55f, 0.95f));
+                    ? RuntimePrimitiveFactory.NegativeGateColor
+                    : RuntimePrimitiveFactory.PositiveGateColor);
 
             var collider = panel.GetComponent<Collider>();
             collider.enabled = false;
@@ -58,8 +58,8 @@ namespace SLGLearn.Level
             label.text = GetDisplayText(operation, value);
             label.anchor = TextAnchor.MiddleCenter;
             label.alignment = TextAlignment.Center;
-            label.characterSize = 0.5f;
-            label.fontSize = 96;
+            label.characterSize = RuntimePrimitiveFactory.GateLabelCharacterSize;
+            label.fontSize = RuntimePrimitiveFactory.GateLabelFontSize;
             label.color = Color.white;
             return label;
         }

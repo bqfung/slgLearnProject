@@ -61,15 +61,21 @@ namespace SLGLearn.Enemy
 
         protected override PooledEnemy CreateItem()
         {
-            var enemyObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            enemyObject.name = "Enemy";
-            enemyObject.transform.SetParent(transform);
-            enemyObject.GetComponent<Renderer>().sharedMaterial =
-                RuntimePrimitiveFactory.CreateMaterial(new Color(0.85f, 0.25f, 0.2f));
+            var enemyObject = RuntimePrimitiveFactory.InstantiatePrefabOrPrimitive(
+                RuntimePrimitiveFactory.EnemyPrefab,
+                PrimitiveType.Capsule,
+                "Enemy",
+                transform);
 
-            enemyObject.AddComponent<EnemyHealth>();
-            enemyObject.AddComponent<EnemyMeleeAttacker>();
-            return enemyObject.AddComponent<PooledEnemy>();
+            var renderer = enemyObject.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = RuntimePrimitiveFactory.CreateMaterial(RuntimePrimitiveFactory.EnemyColor);
+            }
+
+            RuntimePrimitiveFactory.GetOrAdd<EnemyHealth>(enemyObject);
+            RuntimePrimitiveFactory.GetOrAdd<EnemyMeleeAttacker>(enemyObject);
+            return RuntimePrimitiveFactory.GetOrAdd<PooledEnemy>(enemyObject);
         }
     }
 }

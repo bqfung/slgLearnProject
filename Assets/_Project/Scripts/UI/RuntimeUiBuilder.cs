@@ -1,5 +1,6 @@
 using SLGLearn.Core;
 using SLGLearn.Enemy;
+using SLGLearn.Level;
 using SLGLearn.Player;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,6 +24,7 @@ namespace SLGLearn.UI
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var squadText = CreateText(canvasObject.transform, "SquadText", font, "Squad: 0", new Vector2(24f, -24f), TextAnchor.UpperLeft);
             var bossText = CreateText(canvasObject.transform, "BossText", font, "Boss: 0 / 0", new Vector2(24f, -64f), TextAnchor.UpperLeft);
+            var poolDebugText = CreateText(canvasObject.transform, "PoolDebugText", font, string.Empty, new Vector2(-24f, -24f), TextAnchor.UpperRight);
             var resultPanel = CreateResultPanel(canvasObject.transform);
             var resultText = CreateText(resultPanel.transform, "ResultText", font, string.Empty, new Vector2(0f, 52f), TextAnchor.MiddleCenter);
             var restartButton = CreateRestartButton(resultPanel.transform, font);
@@ -30,6 +32,7 @@ namespace SLGLearn.UI
             var hud = canvasObject.AddComponent<BattleHudController>();
             hud.Configure(squad, boss, outcome, squadText, bossText, resultPanel, resultText, restartButton);
 
+            canvasObject.AddComponent<PoolDebugOverlay>().Configure(poolDebugText);
             CreateEventSystem();
         }
 
@@ -45,7 +48,7 @@ namespace SLGLearn.UI
             rect.anchoredPosition = Vector2.zero;
 
             var image = panel.AddComponent<Image>();
-            image.color = new Color(0f, 0f, 0f, 0.72f);
+            image.color = RuntimePrimitiveFactory.ResultPanelColor;
             return panel;
         }
 
@@ -61,7 +64,7 @@ namespace SLGLearn.UI
             rect.anchoredPosition = new Vector2(0f, -42f);
 
             var image = buttonObject.AddComponent<Image>();
-            image.color = new Color(0.15f, 0.45f, 0.95f);
+            image.color = RuntimePrimitiveFactory.RestartButtonColor;
 
             var button = buttonObject.AddComponent<Button>();
             CreateText(buttonObject.transform, "Label", font, "Restart", Vector2.zero, TextAnchor.MiddleCenter);
@@ -74,18 +77,33 @@ namespace SLGLearn.UI
             textObject.transform.SetParent(parent);
 
             var rect = textObject.AddComponent<RectTransform>();
-            rect.anchorMin = anchor == TextAnchor.UpperLeft ? new Vector2(0f, 1f) : new Vector2(0.5f, 0.5f);
+            rect.anchorMin = GetAnchor(anchor);
             rect.anchorMax = rect.anchorMin;
-            rect.sizeDelta = anchor == TextAnchor.UpperLeft ? new Vector2(280f, 36f) : new Vector2(280f, 56f);
+            rect.sizeDelta = anchor switch
+            {
+                TextAnchor.UpperLeft => new Vector2(280f, 36f),
+                TextAnchor.UpperRight => new Vector2(320f, 120f),
+                _ => new Vector2(280f, 56f)
+            };
             rect.anchoredPosition = position;
 
             var text = textObject.AddComponent<Text>();
             text.text = value;
             text.font = font;
-            text.fontSize = anchor == TextAnchor.UpperLeft ? 24 : 42;
+            text.fontSize = anchor == TextAnchor.UpperRight ? 18 : anchor == TextAnchor.UpperLeft ? 24 : 42;
             text.alignment = anchor;
-            text.color = Color.white;
+            text.color = RuntimePrimitiveFactory.HudTextColor;
             return text;
+        }
+
+        private static Vector2 GetAnchor(TextAnchor anchor)
+        {
+            return anchor switch
+            {
+                TextAnchor.UpperLeft => new Vector2(0f, 1f),
+                TextAnchor.UpperRight => new Vector2(1f, 1f),
+                _ => new Vector2(0.5f, 0.5f)
+            };
         }
 
         private static void CreateEventSystem()

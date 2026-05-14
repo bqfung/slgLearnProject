@@ -449,3 +449,62 @@ Docs/
 - 设计结果：通用池只处理生命周期共性，具体池只负责创建对象和暴露业务化 `Spawn` 方法。
 - 遇到的问题：当前仍是每种池一个全局 `Shared`，适合 Demo，但大型项目中需要更统一的池管理器。
 - 后续待优化内容：增加池状态调试信息，例如总创建数、可用数量、峰值数量。
+
+### 2026-05-13：对象池调试面板
+
+- 完成功能：新增运行时对象池调试面板，显示子弹、伤害数字、命中特效和敌人池的 active/free/total 数量。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Core/ComponentPool.cs`
+  - `Assets/_Project/Scripts/UI/PoolDebugOverlay.cs`
+  - `Assets/_Project/Scripts/UI/RuntimeUiBuilder.cs`
+- 设计结果：`ComponentPool<T>` 暴露只读统计信息，`PoolDebugOverlay` 定时读取各池 `Shared` 实例并显示。
+- 遇到的问题：当前面板是开发期调试 UI，后续正式展示或打包时应可关闭。
+- 后续待优化内容：增加开关配置、峰值统计和池扩容次数统计。
+
+### 2026-05-14：对象池调试信息增强
+
+- 完成功能：对象池调试面板新增峰值使用量和扩容次数，并支持按 F3 显示或隐藏。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Core/ComponentPool.cs`
+  - `Assets/_Project/Scripts/UI/PoolDebugOverlay.cs`
+  - `Docs/Stage06_TestChecklist.md`
+  - `Docs/TechnicalNotes.md`
+- 设计结果：`ComponentPool<T>` 记录 `PeakActiveCount` 和 `ExpansionCount`，调试面板显示 active/free/total/peak/grow。
+- 遇到的问题：当前开关按键写在组件默认值中，后续可以迁移到配置或调试菜单。
+- 后续待优化内容：增加对象池统计重置按钮，并在超容量扩容时给出更明显的 UI 提示。
+
+### 2026-05-14：运行时表现配置
+
+- 完成功能：新增 `VisualConfig`，将子弹、伤害数字、命中特效、敌人、Boss、士兵、倍率门和基础 UI 的颜色/尺寸参数集中配置。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Data/VisualConfig.cs`
+  - `Assets/_Project/Scripts/Data/LevelConfig.cs`
+  - `Assets/_Project/Scripts/Level/RuntimePrimitiveFactory.cs`
+  - `Assets/_Project/Scripts/Editor/StageSixSceneBuilder.cs`
+  - `Assets/_Project/Scripts/Combat/BulletPool.cs`
+  - `Assets/_Project/Scripts/Combat/DamageNumberPool.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffect.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffectPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemyPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemySpawner.cs`
+  - `Assets/_Project/Scripts/Level/GateBuilder.cs`
+  - `Assets/_Project/Scripts/Player/SquadManager.cs`
+  - `Assets/_Project/Scripts/UI/RuntimeUiBuilder.cs`
+- 使用方式：点击 `SLG Learn > Build Stage 06 Data Driven Scene` 后会自动创建 `Assets/_Project/ScriptableObjects/Stage06_VisualConfig.asset`，修改配置后重新进入 Play 可验证表现变化。
+- 设计结果：运行时对象仍可自动生成，但表现参数开始从配置读取，为后续替换正式 Prefab 做准备。
+- 后续待优化内容：将临时球体、胶囊体、TextMesh 替换为配置化 Prefab。
+
+### 2026-05-14：Prefab 配置入口
+
+- 完成功能：`VisualConfig` 新增子弹、命中特效、敌人、Boss、士兵 Prefab 引用，运行时创建逻辑优先使用配置 Prefab，未配置时回退到临时几何体。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Data/VisualConfig.cs`
+  - `Assets/_Project/Scripts/Level/RuntimePrimitiveFactory.cs`
+  - `Assets/_Project/Scripts/Combat/BulletPool.cs`
+  - `Assets/_Project/Scripts/Combat/HitEffectPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemyPool.cs`
+  - `Assets/_Project/Scripts/Enemy/EnemySpawner.cs`
+  - `Assets/_Project/Scripts/Player/SquadManager.cs`
+- 设计结果：资源替换路径已经打通，后续只要把 Prefab 拖到 `Stage06_VisualConfig.asset` 上即可替换运行时表现。
+- 遇到的问题：伤害数字、倍率门和 UI 仍是代码创建，暂未 Prefab 化。
+- 后续待优化内容：继续将伤害数字、倍率门、HUD/结果面板改为 Prefab 引用。

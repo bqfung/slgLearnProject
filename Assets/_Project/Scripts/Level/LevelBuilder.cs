@@ -43,6 +43,7 @@ namespace SLGLearn.Level
 
             hasBuilt = true;
 
+            RuntimePrimitiveFactory.Configure(levelConfig.Visuals);
             new EnvironmentBuilder().Build(levelConfig);
             var squad = new PlayerSquadFactory().Create();
             new RuntimeCameraFactory().Create(squad.transform);

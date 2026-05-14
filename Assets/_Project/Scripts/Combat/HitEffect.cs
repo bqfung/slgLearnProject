@@ -1,3 +1,4 @@
+using SLGLearn.Level;
 using UnityEngine;
 
 namespace SLGLearn.Combat
@@ -25,7 +26,7 @@ namespace SLGLearn.Combat
             owner = pool;
             remainingTime = lifetime;
             transform.position = position;
-            transform.localScale = Vector3.one * 0.25f;
+            transform.localScale = Vector3.one * RuntimePrimitiveFactory.HitEffectStartSize;
             gameObject.SetActive(true);
         }
 

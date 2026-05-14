@@ -59,3 +59,4 @@ MonoBehaviour:
     attackRange: 2.2
     attacksPerSecond: 0.8
     damageMembers: 2
+  visualConfig: {fileID: 11400000, guid: 29acc03b171ed4ace81e09dfa774ac9a, type: 2}

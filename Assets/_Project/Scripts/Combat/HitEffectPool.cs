@@ -39,20 +39,20 @@ namespace SLGLearn.Combat
 
         protected override HitEffect CreateItem()
         {
-            var effectObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            effectObject.name = "HitEffect";
-            effectObject.transform.SetParent(transform);
-            effectObject.GetComponent<Renderer>().sharedMaterial =
-                RuntimePrimitiveFactory.CreateMaterial(new Color(1f, 0.45f, 0.1f));
+            var effectObject = RuntimePrimitiveFactory.InstantiatePrefabOrPrimitive(
+                RuntimePrimitiveFactory.HitEffectPrefab,
+                PrimitiveType.Sphere,
+                "HitEffect",
+                transform);
 
-            var collider = effectObject.GetComponent<Collider>();
-            if (collider != null)
+            var renderer = effectObject.GetComponent<Renderer>();
+            if (renderer != null)
             {
-                collider.enabled = false;
-                Destroy(collider);
+                renderer.sharedMaterial = RuntimePrimitiveFactory.CreateMaterial(RuntimePrimitiveFactory.HitEffectColor);
             }
 
-            return effectObject.AddComponent<HitEffect>();
+            RuntimePrimitiveFactory.DisableAndDestroyCollider(effectObject);
+            return RuntimePrimitiveFactory.GetOrAdd<HitEffect>(effectObject);
         }
     }
 }

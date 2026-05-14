@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using SLGLearn.Combat;
+using SLGLearn.Level;
 using UnityEngine;
 
 namespace SLGLearn.Player
@@ -85,10 +86,19 @@ namespace SLGLearn.Player
             }
             else
             {
-                var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                var capsule = RuntimePrimitiveFactory.InstantiatePrefabOrPrimitive(
+                    RuntimePrimitiveFactory.SoldierPrefab,
+                    PrimitiveType.Capsule,
+                    $"Soldier_{index + 1:00}",
+                    transform);
                 capsule.name = $"Soldier_{index + 1:00}";
-                capsule.transform.SetParent(transform);
                 capsule.transform.localScale = new Vector3(0.45f, 0.9f, 0.45f);
+                var renderer = capsule.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    renderer.sharedMaterial = RuntimePrimitiveFactory.CreateMaterial(RuntimePrimitiveFactory.SoldierColor);
+                }
+
                 member = capsule.transform;
             }
 

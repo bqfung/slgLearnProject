@@ -22,16 +22,22 @@ namespace SLGLearn.Enemy
 
         public EnemyHealth SpawnBoss(SquadManager squad, BossConfig bossConfig)
         {
-            var boss = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            boss.name = "Boss";
+            var boss = RuntimePrimitiveFactory.InstantiatePrefabOrPrimitive(
+                RuntimePrimitiveFactory.BossPrefab,
+                PrimitiveType.Capsule,
+                "Boss",
+                null);
             boss.transform.position = bossConfig.Position;
             boss.transform.localScale = new Vector3(2.2f, 2.8f, 2.2f);
-            boss.GetComponent<Renderer>().sharedMaterial =
-                RuntimePrimitiveFactory.CreateMaterial(new Color(0.45f, 0.15f, 0.85f));
+            var renderer = boss.GetComponent<Renderer>();
+            if (renderer != null)
+            {
+                renderer.sharedMaterial = RuntimePrimitiveFactory.CreateMaterial(RuntimePrimitiveFactory.BossColor);
+            }
 
-            var health = boss.AddComponent<EnemyHealth>();
+            var health = RuntimePrimitiveFactory.GetOrAdd<EnemyHealth>(boss);
             health.Configure(bossConfig.Health);
-            boss.AddComponent<EnemyMeleeAttacker>().Configure(
+            RuntimePrimitiveFactory.GetOrAdd<EnemyMeleeAttacker>(boss).Configure(
                 squad,
                 bossConfig.MoveSpeed,
                 bossConfig.AttackRange,

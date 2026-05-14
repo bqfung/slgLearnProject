@@ -10,6 +10,15 @@ namespace SLGLearn.Core
 
         private readonly Queue<T> available = new();
         private int totalCreated;
+        private int peakActiveCount;
+        private int expansionCount;
+
+        public int TotalCreated => totalCreated;
+        public int AvailableCount => available.Count;
+        public int ActiveCount => totalCreated - available.Count;
+        public int PeakActiveCount => peakActiveCount;
+        public int ExpansionCount => expansionCount;
+        public int MaxSize => maxSize;
 
         protected virtual void Awake()
         {
@@ -32,15 +41,20 @@ namespace SLGLearn.Core
         {
             if (available.Count > 0)
             {
-                return available.Dequeue();
+                var item = available.Dequeue();
+                UpdatePeakActiveCount();
+                return item;
             }
 
             if (totalCreated >= maxSize)
             {
+                expansionCount++;
                 Debug.LogWarning($"{name} exceeded configured max size {maxSize}. Expanding pool.");
             }
 
-            return CreateAndRegister();
+            var created = CreateAndRegister();
+            UpdatePeakActiveCount();
+            return created;
         }
 
         protected abstract T CreateItem();
@@ -59,6 +73,11 @@ namespace SLGLearn.Core
             totalCreated++;
             item.gameObject.SetActive(false);
             return item;
+        }
+
+        private void UpdatePeakActiveCount()
+        {
+            peakActiveCount = Mathf.Max(peakActiveCount, ActiveCount);
         }
     }
 }

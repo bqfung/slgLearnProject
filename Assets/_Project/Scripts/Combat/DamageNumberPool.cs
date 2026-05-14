@@ -1,4 +1,5 @@
 using SLGLearn.Core;
+using SLGLearn.Level;
 using UnityEngine;
 
 namespace SLGLearn.Combat
@@ -44,9 +45,9 @@ namespace SLGLearn.Combat
             var text = itemObject.AddComponent<TextMesh>();
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
-            text.characterSize = 0.28f;
-            text.fontSize = 72;
-            text.color = new Color(1f, 0.25f, 0.15f);
+            text.characterSize = RuntimePrimitiveFactory.DamageNumberCharacterSize;
+            text.fontSize = RuntimePrimitiveFactory.DamageNumberFontSize;
+            text.color = RuntimePrimitiveFactory.DamageNumberColor;
 
             return itemObject.AddComponent<DamageNumber>();
         }

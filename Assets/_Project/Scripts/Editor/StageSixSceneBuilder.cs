@@ -10,6 +10,7 @@ namespace SLGLearn.EditorTools
     {
         private const string ScenePath = "Assets/_Project/Scenes/Stage06_DataDriven.unity";
         private const string ConfigPath = "Assets/_Project/ScriptableObjects/Stage06_LevelConfig.asset";
+        private const string VisualConfigPath = "Assets/_Project/ScriptableObjects/Stage06_VisualConfig.asset";
 
         [MenuItem("SLG Learn/Build Stage 06 Data Driven Scene")]
         public static void BuildScene()
@@ -28,21 +29,50 @@ namespace SLGLearn.EditorTools
 
         private static LevelConfig LoadOrCreateConfig()
         {
+            var visualConfig = LoadOrCreateVisualConfig();
             var config = AssetDatabase.LoadAssetAtPath<LevelConfig>(ConfigPath);
             if (config != null)
             {
+                EnsureVisualConfig(config, visualConfig);
                 return config;
             }
 
             config = ScriptableObject.CreateInstance<LevelConfig>();
             AssetDatabase.CreateAsset(config, ConfigPath);
-            WriteDefaultConfig(config);
+            WriteDefaultConfig(config, visualConfig);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             return config;
         }
 
-        private static void WriteDefaultConfig(LevelConfig config)
+        private static VisualConfig LoadOrCreateVisualConfig()
+        {
+            var config = AssetDatabase.LoadAssetAtPath<VisualConfig>(VisualConfigPath);
+            if (config != null)
+            {
+                return config;
+            }
+
+            config = ScriptableObject.CreateInstance<VisualConfig>();
+            AssetDatabase.CreateAsset(config, VisualConfigPath);
+            EditorUtility.SetDirty(config);
+            return config;
+        }
+
+        private static void EnsureVisualConfig(LevelConfig config, VisualConfig visualConfig)
+        {
+            var serializedConfig = new SerializedObject(config);
+            var visualProperty = serializedConfig.FindProperty("visualConfig");
+            if (visualProperty.objectReferenceValue == null)
+            {
+                visualProperty.objectReferenceValue = visualConfig;
+                serializedConfig.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(config);
+                AssetDatabase.SaveAssets();
+            }
+        }
+
+        private static void WriteDefaultConfig(LevelConfig config, VisualConfig visualConfig)
         {
             var serializedConfig = new SerializedObject(config);
 
@@ -68,6 +98,8 @@ namespace SLGLearn.EditorTools
             boss.FindPropertyRelative("attackRange").floatValue = 2.2f;
             boss.FindPropertyRelative("attacksPerSecond").floatValue = 0.8f;
             boss.FindPropertyRelative("damageMembers").intValue = 2;
+
+            serializedConfig.FindProperty("visualConfig").objectReferenceValue = visualConfig;
 
             serializedConfig.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(config);

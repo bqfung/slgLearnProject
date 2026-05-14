@@ -26,6 +26,9 @@
 - 新增 `LevelConfig` 和运行时 `LevelBuilder`，把关卡门、敌人波次和 Boss 参数改为配置驱动。
 - 新增子弹、伤害数字、命中特效、普通敌人对象池，士兵攻击从即时伤害升级为子弹命中。
 - 新增通用 `ComponentPool<T>`，统一对象池基础生命周期。
+- 新增对象池调试面板，用于观察 active/free/total/peak/grow 数量，支持 F3 显示或隐藏。
+- 新增 `VisualConfig`，集中配置运行时临时表现颜色和尺寸。
+- `VisualConfig` 支持可选 Prefab 引用，可逐步替换子弹、命中特效、敌人、Boss、士兵表现。
 - 添加第 1、2、3、4、5、6 阶段测试场景生成工具。
 
 下一步：

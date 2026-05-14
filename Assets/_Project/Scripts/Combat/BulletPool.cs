@@ -43,25 +43,27 @@ namespace SLGLearn.Combat
 
         protected override Bullet CreateItem()
         {
-            if (bulletPrefab != null)
+            var configuredPrefab = bulletPrefab != null
+                ? bulletPrefab.gameObject
+                : RuntimePrimitiveFactory.BulletPrefab;
+
+            if (configuredPrefab != null)
             {
-                return Instantiate(bulletPrefab, transform);
+                var instance = Instantiate(configuredPrefab, transform);
+                instance.name = "Bullet";
+                RuntimePrimitiveFactory.DisableAndDestroyCollider(instance);
+                return RuntimePrimitiveFactory.GetOrAdd<Bullet>(instance);
             }
 
             var bulletObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             bulletObject.name = "Bullet";
             bulletObject.transform.SetParent(transform);
-            bulletObject.transform.localScale = Vector3.one * 0.22f;
+            bulletObject.transform.localScale = Vector3.one * RuntimePrimitiveFactory.BulletSize;
 
-            var collider = bulletObject.GetComponent<Collider>();
-            if (collider != null)
-            {
-                collider.enabled = false;
-                Destroy(collider);
-            }
+            RuntimePrimitiveFactory.DisableAndDestroyCollider(bulletObject);
 
             bulletObject.GetComponent<Renderer>().sharedMaterial =
-                RuntimePrimitiveFactory.CreateMaterial(new Color(1f, 0.85f, 0.2f));
+                RuntimePrimitiveFactory.CreateMaterial(RuntimePrimitiveFactory.BulletColor);
             return bulletObject.AddComponent<Bullet>();
         }
     }

@@ -138,15 +138,15 @@
 
 ### 当前实现记录
 
-- `SoldierWeapon` 挂在每个士兵身上，按攻击间隔寻找目标并造成伤害。
+- `SoldierWeapon` 挂在每个士兵身上，按攻击间隔寻找目标并发射子弹。
 - 目标搜索使用 `Physics.OverlapSphereNonAlloc`，避免每次搜索都分配新数组。
 - 当前优先攻击前方攻击范围内距离最近的敌人。
 - `EnemyHealth` 负责敌人的血量、受击和死亡。
-- 敌人死亡后暂时 `SetActive(false)`，后续对象池阶段会改为回收。
+- 普通敌人死亡后通过 `EnemyPool` 回收，Boss 死亡后用于触发胜利判断。
 
 ### 当前设计取舍
 
-- 第 3 阶段先使用即时伤害，而不是子弹飞行，目的是尽快验证战斗闭环。
+- 当前攻击已经升级为对象池子弹，命中后再造成伤害。
 - 每个士兵独立索敌，逻辑清晰但规模变大后会有性能压力；后续可以改成小队级目标分发、分帧搜索或空间分区。
 - 当前只检查目标是否在前方，暂未处理遮挡、目标权重和多目标技能。
 
@@ -190,6 +190,9 @@
 - `EnemySpawner` 现在通过 `EnemyPool` 生成普通敌人，Boss 仍独立创建。
 - `ComponentPool<T>` 抽出了对象池的通用逻辑：预热、取出、回收、超过配置容量时警告。
 - `BulletPool`、`DamageNumberPool`、`HitEffectPool`、`EnemyPool` 都继承 `ComponentPool<T>`。
+- `ComponentPool<T>` 暴露 `TotalCreated`、`AvailableCount`、`ActiveCount`、`PeakActiveCount`、`ExpansionCount`，供调试面板读取。
+- `PoolDebugOverlay` 会显示各对象池的 active/free/total/peak/grow 数量，用于运行时观察池复用情况。
+- `PoolDebugOverlay` 支持按 F3 隐藏或显示。
 
 ### 当前设计取舍
 
@@ -209,6 +212,7 @@
 - 敌人池化时要特别注意状态重置，例如血量、目标、移动速度、攻击冷却、父节点和激活状态。
 - 当前 `EnemyMeleeAttacker.Configure` 会重置攻击冷却，避免池化敌人复用后继承旧状态。
 - 抽通用池时要避免“为了复用而复用”：如果通用基类塞入太多业务参数，反而会让每个对象池更难维护。
+- 对象池调试面板能帮助判断池是否在复用：如果 total 长期上涨，说明池容量不够或回收逻辑有问题；如果 grow 大于 0，说明运行时已经超过了预设池容量。
 
 ## 6. 敌人波次系统
 
@@ -370,6 +374,10 @@
 - `PlayerSquadFactory` 负责创建玩家小队对象并挂载小队相关组件。
 - `RuntimeCameraFactory` 负责创建主摄像机并挂载跟随组件。
 - `LevelBuilder` 现在主要负责关卡构建顺序：环境、小队、摄像机、倍率门、敌人、Boss、胜负控制和 UI 装配。
+- `VisualConfig` 负责集中配置运行时临时表现，包括颜色、文字大小和基础尺寸。
+- `RuntimePrimitiveFactory` 在 `LevelBuilder` 启动时接收 `VisualConfig`，运行时创建临时对象时统一读取这些表现参数。
+- `VisualConfig` 现在也可以配置子弹、命中特效、敌人、Boss、士兵 Prefab。
+- `RuntimePrimitiveFactory.InstantiatePrefabOrPrimitive` 负责“优先实例化 Prefab，未配置时回退到临时 Primitive”的逻辑。
 
 ### 面试可讲点补充
 
@@ -378,6 +386,8 @@
 - 拆分后每个类更容易单独替换，例如后续可以把 `EnemySpawner` 改成对象池版本，而不影响倍率门逻辑。
 - UI 创建拆到 `RuntimeUiBuilder` 后，后续可以从“代码创建 UI”平滑替换为“加载 UI Prefab”，不用改关卡生成流程。
 - 环境、小队和摄像机拆出后，`LevelBuilder` 更接近流程编排器；后续替换正式 Prefab 时影响面更小。
+- 表现配置先集中到 `VisualConfig`，再逐步迁移到正式 Prefab，是比一次性替换所有资源更稳的路径。
+- Prefab 字段保持可选，可以在没有美术资源时继续运行 Demo，也可以逐步替换单个对象类型。
 
 ### 面试可讲点补充
 

@@ -15,10 +15,14 @@ namespace SLGLearn.Data
         [SerializeField] private List<EnemyWaveConfig> enemyWaves = new();
         [SerializeField] private BossConfig boss = new();
 
+        [Header("Presentation")]
+        [SerializeField] private VisualConfig visualConfig;
+
         public float RoadLength => roadLength;
         public float RoadWidth => roadWidth;
         public IReadOnlyList<GateConfig> Gates => gates;
         public IReadOnlyList<EnemyWaveConfig> EnemyWaves => enemyWaves;
         public BossConfig Boss => boss;
+        public VisualConfig Visuals => visualConfig;
     }
 }
