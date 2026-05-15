@@ -29,6 +29,8 @@
 - 新增对象池调试面板，用于观察 active/free/total/peak/grow 数量，支持 F3 显示或隐藏。
 - 新增 `VisualConfig`，集中配置运行时临时表现颜色和尺寸。
 - `VisualConfig` 支持可选 Prefab 引用，可逐步替换子弹、命中特效、敌人、Boss、士兵表现。
+- 新增 `LevelConfig` Inspector 工具，支持配置校验、节奏间距 Warning 和基于当前配置生成预览场景。
+- 新增 `LevelValidationSettings`，用于配置关卡校验阈值。
 - 添加第 1、2、3、4、5、6 阶段测试场景生成工具。
 
 下一步：

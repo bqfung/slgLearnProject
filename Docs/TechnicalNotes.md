@@ -460,3 +460,54 @@
 4. 自动战斗系统。
 
 这些内容完成后，项目就会有可玩的核心雏形。
+
+## 12. 关卡编辑器
+
+### 目标
+
+通过 Unity Editor 扩展，让 `LevelConfig` 更容易校验、生成和调试，形成作品集亮点。
+
+### 当前实现记录
+
+- `LevelConfigValidator` 负责纯配置校验，不依赖 Inspector。
+- `LevelConfigIssue` 用于描述单条校验结果，包含级别、消息和配置路径。
+- `LevelValidationSettings` 保存关卡校验阈值，例如 Gate spacing、Enemy wave spacing。
+- `LevelConfigEditor` 是 `LevelConfig` 的自定义 Inspector。
+- Inspector 中提供 `Validate Config` 按钮。
+- Inspector 中提供 `Generate Preview Scene For This Config` 按钮。
+- Inspector 中提供 `Validation Settings` 引用，默认使用 `Stage07_LevelValidationSettings.asset`。
+- 校验结果通过 `HelpBox` 显示在 Inspector 下方，Error 和 Warning 使用不同样式。
+- 菜单 `SLG Learn > Build Stage 06 Data Driven Scene` 仍生成默认测试场景。
+- Inspector 生成按钮会基于当前选中的 `LevelConfig` 生成 `Preview_<ConfigName>.unity`。
+- 生成预览场景前会自动运行校验；如果存在 Error，会弹窗让开发者选择取消或继续生成。
+- 校验结果会显示 `PropertyPath`，例如 `boss.position`、`gates.Array.data[0].z`。
+- 校验器会检查关键内容之间的间距，发现节奏过密时给出 Warning。
+
+### 当前校验规则
+
+- Road length 和 road width 必须大于 0。
+- Gate Z 不能为负数，不能超过赛道长度。
+- Gate 左右数值必须大于 0。
+- Enemy wave Z 不能为负数，不能超过赛道长度。
+- Enemy wave 应按 Z 从小到大排序。
+- Enemy wave count 和 health 必须大于 0。
+- Boss 必须存在，血量必须大于 0。
+- Boss 应放在最后一波敌人之后。
+- VisualConfig 未配置时给出 Warning，因为运行时仍可使用代码回退表现。
+- Gate 之间建议间距由 `LevelValidationSettings.MinGateSpacing` 控制，默认 8。
+- Enemy wave 之间建议间距由 `LevelValidationSettings.MinWaveSpacing` 控制，默认 10。
+- Gate 和 Enemy wave 之间建议间距由 `LevelValidationSettings.MinGateWaveSpacing` 控制，默认 6。
+- Boss 与最后一波敌人的建议间距由 `LevelValidationSettings.MinBossAfterLastWaveSpacing` 控制，默认 12。
+
+### 面试可讲点
+
+- Editor 工具可以减少配置错误，提高关卡制作效率。
+- 校验逻辑和 Inspector 展示分离，更方便后续复用到批量检查或构建前检查。
+- ScriptableObject 适合做关卡配置，自定义 Inspector 适合做配置入口和轻量工具链。
+- 工具链是作品集亮点，因为它体现了从“能玩”到“能生产内容”的工程意识。
+- 让预览场景基于当前配置生成，比固定生成默认关卡更贴近真实关卡生产流程。
+- 生成前校验是常见工具链设计：既要减少低级配置错误，也要允许开发者在需要时带着提醒继续调试。
+- 校验结果分级很重要：Error 表示可能破坏关卡运行或数值逻辑，Warning 表示可运行但建议修正。
+- `PropertyPath` 让校验结果具备可扩展性，后续可以用于点击定位、批量报告或构建前检查日志。
+- 关卡节奏问题适合先做成 Warning，因为它更像设计建议；这样工具不会过度阻断调试流程。
+- 校验阈值做成 ScriptableObject 后，工具规则可以被配置和复用，而不是散落在代码常量里。

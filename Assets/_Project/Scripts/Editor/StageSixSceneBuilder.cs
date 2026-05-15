@@ -16,15 +16,36 @@ namespace SLGLearn.EditorTools
         public static void BuildScene()
         {
             var config = LoadOrCreateConfig();
+            BuildScene(config, ScenePath);
+        }
+
+        public static void BuildScene(LevelConfig config)
+        {
+            if (config == null)
+            {
+                Debug.LogError("Cannot build data driven scene because LevelConfig is missing.");
+                return;
+            }
+
+            var configPath = AssetDatabase.GetAssetPath(config);
+            var configName = string.IsNullOrEmpty(configPath)
+                ? config.name
+                : System.IO.Path.GetFileNameWithoutExtension(configPath);
+            var previewPath = $"Assets/_Project/Scenes/Preview_{configName}.unity";
+            BuildScene(config, previewPath);
+        }
+
+        private static void BuildScene(LevelConfig config, string scenePath)
+        {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var builderObject = new GameObject("LevelBuilder");
             builderObject.AddComponent<LevelBuilder>().Configure(config, true);
 
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            EditorSceneManager.OpenScene(ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
+            EditorSceneManager.OpenScene(scenePath);
 
-            Debug.Log($"Stage 06 data driven scene created: {ScenePath}");
+            Debug.Log($"Data driven scene created: {scenePath}");
         }
 
         private static LevelConfig LoadOrCreateConfig()

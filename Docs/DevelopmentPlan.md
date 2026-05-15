@@ -209,7 +209,7 @@
 - 至少完成一个亮点系统。
 - 能说明设计思路、扩展方式和遇到的问题。
 
-状态：待开始
+状态：进行中
 
 ### 第 8 阶段：优化、打包与面试材料
 
@@ -508,3 +508,89 @@ Docs/
 - 设计结果：资源替换路径已经打通，后续只要把 Prefab 拖到 `Stage06_VisualConfig.asset` 上即可替换运行时表现。
 - 遇到的问题：伤害数字、倍率门和 UI 仍是代码创建，暂未 Prefab 化。
 - 后续待优化内容：继续将伤害数字、倍率门、HUD/结果面板改为 Prefab 引用。
+
+### 2026-05-14：第 7 阶段关卡编辑器基础版
+
+- 完成功能：新增 `LevelConfig` 自定义 Inspector 和关卡配置校验器。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelConfigValidator.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 使用方式：选中 `Stage06_LevelConfig.asset`，在 Inspector 中点击 `Validate Config` 或 `Generate Preview Scene For This Config`。
+- 设计结果：校验逻辑和 Inspector 展示分离，`LevelConfigValidator` 负责规则，`LevelConfigEditor` 负责按钮和展示。
+- 当前校验规则：道路长度/宽度、倍率门位置和值、敌人波次位置/数量/血量、Boss 位置/血量、VisualConfig 是否配置。
+- 后续待优化内容：增加赛道可视化预览、门/波次重叠检测、关卡难度估算。
+
+### 2026-05-14：按当前配置生成预览场景
+
+- 完成功能：`LevelConfigEditor` 的生成按钮改为使用当前选中的 `LevelConfig`，并生成独立预览场景。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/StageSixSceneBuilder.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 设计结果：菜单仍可生成默认 `Stage06_DataDriven` 场景，Inspector 按钮则生成 `Preview_<ConfigName>.unity`，方便多个关卡配置独立预览。
+- 后续待优化内容：区分阻断性错误和普通提醒，并加入更明确的错误定位。
+
+### 2026-05-14：预览生成前自动校验
+
+- 完成功能：点击 `Generate Preview Scene For This Config` 时先自动运行配置校验。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 设计结果：如果配置存在问题，Inspector 会显示校验结果，并弹窗让开发者选择取消或继续生成。
+- 学习价值：这是编辑器工具常见闭环，避免错误配置直接进入预览，同时保留“带警告继续验证”的灵活性。
+- 后续待优化内容：为问题增加定位信息，让开发者更快找到对应配置项。
+
+### 2026-05-14：关卡校验结果分级
+
+- 完成功能：`LevelConfigValidator` 的结果从字符串升级为 `LevelConfigIssue`，支持 Error 和 Warning 两种级别。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelConfigValidator.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 设计结果：道路、倍率门、敌人波次、Boss 等会影响关卡可运行性的配置问题显示为 Error；VisualConfig 缺失显示为 Warning。
+- 工具行为：生成预览场景前只有存在 Error 时才弹出确认框，只有 Warning 时允许直接生成。
+- 学习价值：编辑器工具不只是发现问题，还要按风险分级，减少不必要的打断。
+- 后续待优化内容：基于定位信息增加点击跳转或高亮对应 Inspector 字段。
+
+### 2026-05-14：关卡校验问题定位
+
+- 完成功能：`LevelConfigIssue` 新增 `PropertyPath`，校验结果会显示到具体配置字段。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelConfigValidator.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 设计结果：常见问题会显示类似 `boss.position`、`gates.Array.data[0].z`、`enemyWaves.Array.data[0].count` 的路径。
+- 学习价值：配置工具要尽量缩短“发现问题到修正问题”的距离，定位信息比单纯报错更接近真实生产工具。
+- 后续待优化内容：基于 `PropertyPath` 增加点击定位或高亮对应 Inspector 字段。
+
+### 2026-05-14：关卡节奏间距校验
+
+- 完成功能：新增门与门、敌人波次与波次、门与敌人波次、Boss 与最后一波敌人的距离检查。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelConfigValidator.cs`
+  - `Docs/Stage07_TestChecklist.md`
+  - `Docs/TechnicalNotes.md`
+- 当前阈值：
+  - Gate spacing：至少 8。
+  - Enemy wave spacing：至少 10。
+  - Gate-wave spacing：至少 6。
+  - Boss after last wave spacing：至少 12。
+- 设计结果：间距问题显示为 Warning，因为它通常不阻断运行，但会影响关卡节奏和可读性。
+- 学习价值：关卡工具不只检查“能不能跑”，也应该辅助设计体验，帮助提前发现节奏问题。
+- 后续待优化内容：为不同关卡类型准备多套阈值配置，并支持快速切换。
+
+### 2026-05-14：校验阈值配置资产
+
+- 完成功能：新增编辑器用 `LevelValidationSettings`，将关卡节奏间距阈值从代码常量迁移到 ScriptableObject 配置。
+- 修改的主要文件：
+  - `Assets/_Project/Scripts/Editor/LevelValidationSettings.cs`
+  - `Assets/_Project/ScriptableObjects/Stage07_LevelValidationSettings.asset`
+  - `Assets/_Project/Scripts/Editor/LevelValidationSettingsProvider.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigValidator.cs`
+  - `Assets/_Project/Scripts/Editor/LevelConfigEditor.cs`
+  - `Docs/Stage07_TestChecklist.md`
+- 使用方式：选中 `Stage07_LevelValidationSettings.asset` 修改间距阈值，再回到 `LevelConfig` Inspector 点击 `Validate Config`。
+- 设计结果：`LevelConfigEditor` 默认加载校验配置，`LevelConfigValidator` 接收配置参数后按配置阈值生成 Warning。
+- 学习价值：把工具规则数据化，能让不同关卡类型使用不同校验标准，也减少改代码带来的风险；编辑器专用配置放在 Editor 目录，边界更清楚。
+- 后续待优化内容：给不同难度或章节准备多套校验配置，并支持在 Inspector 中快速切换。
