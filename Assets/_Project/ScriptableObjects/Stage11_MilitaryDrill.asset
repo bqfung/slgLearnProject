@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: Stage11_MilitaryDrill
+  m_EditorClassIdentifier: Assembly-CSharp:SLGLearn.Data:TechnologyConfig
+  id: military_drill
+  displayName: Military Drill
+  levels:
+  - researchDurationSeconds: 5
+    researchCosts:
+    - resourceId: food
+      amount: 60
+    technologyPrerequisites: []
+    buildingRequirements:
+    - buildingId: headquarters
+      requiredLevel: 2
+    effects:
+    - type: 1
+      targetId: 
+      value: 0.25
+  - researchDurationSeconds: 8
+    researchCosts:
+    - resourceId: food
+      amount: 120
+    technologyPrerequisites:
+    - technologyId: agriculture
+      requiredLevel: 1
+    buildingRequirements:
+    - buildingId: headquarters
+      requiredLevel: 2
+    effects:
+    - type: 1
+      targetId: 
+      value: 0.25
+    - type: 2
+      targetId: 
+      value: 0.15

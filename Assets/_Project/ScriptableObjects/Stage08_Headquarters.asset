@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05c8bb8b25654cb28277171bfc3c3569, type: 3}
+  m_Name: Stage08_Headquarters
+  m_EditorClassIdentifier: 
+  id: headquarters
+  displayName: Headquarters
+  levels:
+  - upgradeDurationSeconds: 0
+    upgradeCosts: []
+    production: []
+  - upgradeDurationSeconds: 5
+    upgradeCosts:
+    - resourceId: food
+      amount: 80
+    - resourceId: wood
+      amount: 80
+    production: []
+  - upgradeDurationSeconds: 8
+    upgradeCosts:
+    - resourceId: food
+      amount: 160
+    - resourceId: wood
+      amount: 160
+    production: []

@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5332ec0f35ac437ea84d7aab9b55a65c, type: 3}
+  m_Name: Stage13_SupplyDepot
+  m_EditorClassIdentifier: 
+  id: supply_depot
+  displayName: Supply Depot
+  recommendedPower: 45
+  victoryLossRate: 0.2
+  defeatLossRate: 0.55
+  garrison:
+  - troopId: archer
+    count: 2
+  - troopId: cavalry
+    count: 2
+  prerequisiteStrongholdIds:
+  - outpost
+  mapPosition: {x: 360, y: -610}
+  rewards:
+  - resourceId: wood
+    amount: 160
+  - resourceId: food
+    amount: 60
+  repeatRewards:
+  - resourceId: wood
+    amount: 40
+  - resourceId: food
+    amount: 15

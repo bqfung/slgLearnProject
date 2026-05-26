@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5332ec0f35ac437ea84d7aab9b55a65c, type: 3}
+  m_Name: Stage10_Outpost
+  m_EditorClassIdentifier: 
+  id: outpost
+  displayName: Outpost
+  recommendedPower: 20
+  victoryLossRate: 0.15
+  defeatLossRate: 0.45
+  garrison:
+  - troopId: infantry
+    count: 2
+  prerequisiteStrongholdIds: []
+  mapPosition: {x: 32, y: -548}
+  rewards:
+  - resourceId: food
+    amount: 70
+  - resourceId: wood
+    amount: 30
+  repeatRewards:
+  - resourceId: food
+    amount: 17.5
+  - resourceId: wood
+    amount: 7.5
